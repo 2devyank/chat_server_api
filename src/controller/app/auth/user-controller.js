@@ -27,7 +27,7 @@ const registerUser=asyncHandler(async(req,res)=>{
         username,email,
         password,
         isEmailVerified:false,
-        role
+        role:"USER"
    })
     
    const{unhashedToken,hashedToken,tokenExpiry}=user.generateTempToken();
@@ -96,7 +96,7 @@ const loginUser=asyncHandler(async(req,res)=>{
     if(!user){
         console.log("user does not exist")
     }
-    const pass=user.isPasswordcorrect(password);
+    const pass=user.isPasswordCorrect(password);
     if(!pass){
         console.log("password not valid")
     }
@@ -113,7 +113,7 @@ const loginUser=asyncHandler(async(req,res)=>{
     .cookie("refreshTOken",refreshToken,options)
     .json(
         new ApiResponse(
-            200,{user:loggedInUser,accesstoken,refreshToken},
+            200,{user:loggedInUser,accessToken,refreshToken},
             "User Logged in successfully"
         )
     )
@@ -143,5 +143,7 @@ const logoutUser=asyncHandler(async(req,res)=>{
 })
 export{
     registerUser,
-    verifyEmail
+    verifyEmail,
+    loginUser,
+    logoutUser
 }

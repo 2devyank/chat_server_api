@@ -18,7 +18,7 @@ import nodemailer from "nodemailer"
         port:465,
         auth:{
             user:"devyanknagpal2002@gmail.com",
-            pass:"uwml jknf elkx ojwq",
+            pass:process.env.MAILTRAP_SMTP_PASS,
         }
     })
     const mail={
