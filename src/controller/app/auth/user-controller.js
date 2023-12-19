@@ -3,9 +3,11 @@ import { ApiResponse } from "../../../../utils/apiResponse.js";
 import { asyncHandler } from "../../../../utils/asyncHandler.js";
 import crypto from "crypto";
 import {mailgencontent, sendEmail} from "../../../../utils/mail.js"
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshTokens=async(userId)=>{
     try{
+        
         const user=await User.findById(userId);
         const accessToken=user.generateAccessToken();
         const refreshToken=user.generateRefreshToken();
@@ -100,7 +102,26 @@ const loginUser=asyncHandler(async(req,res)=>{
     if(!pass){
         console.log("password not valid")
     }
-    const {accessToken,refreshToken}=await generateAccessAndRefreshTokens(user._id);
+    // const {accessToken,refreshToken}=await generateAccessAndRefreshTokens(user._id);
+  console.log(user._id,user.username);
+    const  accessToken= jwt.sign(
+        {
+            _id: user._id,
+            email: user.email,
+            username: user.username,
+            role: user.role,
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "2d" }
+    );
+   const refreshToken=jwt.sign(
+    {
+        _id: user._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: "10d" }
+)
+   
     const loggedInUser=await User.findById(user._id);
 
     const options={
@@ -110,7 +131,7 @@ const loginUser=asyncHandler(async(req,res)=>{
     return res
     .status(200)
     .cookie("accessToken",accessToken,options)
-    .cookie("refreshTOken",refreshToken,options)
+    .cookie("refreshToken",refreshToken,options)
     .json(
         new ApiResponse(
             200,{user:loggedInUser,accessToken,refreshToken},

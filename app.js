@@ -4,6 +4,7 @@ import {createServer} from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import  authrouter from "./routes/app/auth/auth-routes.js"
+import  chatrouter from "./routes/app/chat-app/chat-route.js"
 import bodyParser from "body-parser";
 import { Server } from "socket.io";
 import { initializeSocketIO } from "./src/socket/index.js";
@@ -35,6 +36,7 @@ app.use(cookieParser());
 
 
 app.use("/chatapp",authrouter)
+app.use("/chatapp",chatrouter)
 app.post("/fet",(req,res)=>{
     res.send("message got")
 })
