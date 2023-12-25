@@ -19,7 +19,7 @@ const chatMessageSchema=new Schema(
             default:[],
         },
         chat:{
-            type:Schema.Type.ObjectId,
+            type:Schema.Types.ObjectId,
             ref:"Chat",
         }
     },
