@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { ChatEventEnum } from "../../../../constant.js";
 import { User } from "../../../../models/app/auth/auth-model.js"
 import { Chat } from "../../../../models/app/chat-app/chat.model.js";
@@ -106,11 +107,13 @@ const searchAllusers = asyncHandler(async (req, res) => {
 })
 const createOrGetOneOnOneChat = asyncHandler(async (req, res) => {
     const { receiverId } = req.params;
-    const receiver = User.findById(receiverId);
+    console.log("id received",receiverId)
+    const receiver = await User.findById(receiverId);
+    console.log("banda",receiver._id);
     if (!receiver) {
         console.log("no user exist with given id");
     }
-
+console.log("string conversion",receiver._id.toString())
     if (receiver._id.toString() == req.user._id.toString()) {
         console.log("user can not chat with himself");
     }
@@ -147,7 +150,7 @@ const createOrGetOneOnOneChat = asyncHandler(async (req, res) => {
         participants: [req.user._id, new mongoose.Types.ObjectId(receiverId)],
         admin: req.user._id,
     });
-    const createdChat = await chat.aggregate([
+    const createdChat = await Chat.aggregate([
         {
             $match: {
                 _id: newChatInstance._id,
@@ -186,7 +189,7 @@ const deleteOneOnOneChat=asyncHandler(async(req,res)=>{
     if(!payload){
         console.log("chat does not exist");
     }
-    await Chat.findByIdAnddelete(chatId);
+    await Chat.findByIdAndDelete(chatId);
     await deleteCascadchatMessage(chatId);
     const otherparticipants=payload?.participants?.find(
         (participant)=>participant?._id.toString()!==req.user._id.toString()
