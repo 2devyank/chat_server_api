@@ -4,6 +4,7 @@ import { ChatMessage } from "../../../../models/app/chat-app/message.model.js";
 import { ApiResponse } from "../../../../utils/apiResponse.js";
 import { asyncHandler } from "../../../../utils/asyncHandler.js";
 import { ChatEventEnum } from "../../../../constant.js";
+import { emitSocketEvent } from "../../../socket/index.js";
 
 
 
@@ -53,7 +54,7 @@ const getAllMessages=asyncHandler(async(req,res)=>{
     const messages=await ChatMessage.aggregate([
         {
             $match:{
-                chat:new mongoose.Types.ObjetId(chatId),
+                chat:new mongoose.Types.ObjectId(chatId),
 
             }
         },
@@ -72,7 +73,7 @@ const getAllMessages=asyncHandler(async(req,res)=>{
 const sendMessage=asyncHandler(async(req,res)=>{
     const {chatId}=req.params;
     const {content}=req.body;
-
+    console.log("yh rha content",content);
     if(!content && !req.files?.attachments.length){
         console.log("no message content provided");
     }
@@ -85,7 +86,7 @@ const sendMessage=asyncHandler(async(req,res)=>{
     const messageFiles=[];
 
     const message =await ChatMessage.create({
-        sender:new mongoose.Types.ObjetId(req.user._id),
+        sender:new mongoose.Types.ObjectId(req.user._id),
         content:content||"",
         chat:new mongoose.Types.ObjectId(chatId),
         attachments:messageFiles,
