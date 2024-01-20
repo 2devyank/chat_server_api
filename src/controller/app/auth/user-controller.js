@@ -49,7 +49,6 @@ const registerUser=asyncHandler(async(req,res)=>{
    const createdUser=await User.findById(user._id);
    if(!createdUser){
     console.log("some error occured");
-
    }
    return res.status(201)
    .json(

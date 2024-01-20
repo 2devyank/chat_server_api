@@ -84,6 +84,14 @@ const sendMessage=asyncHandler(async(req,res)=>{
 
     }
     const messageFiles=[];
+    if(req.files && req.files.attachments?.length>0){
+        req.files.attachments?.map((attachment)=>{
+            messageFiles.push({
+                url:getStaticFilePath(req,attachment.filename),
+                localPath:getLocalPath(attachment.filename),
+            })
+        })
+    }
 
     const message =await ChatMessage.create({
         sender:new mongoose.Types.ObjectId(req.user._id),
