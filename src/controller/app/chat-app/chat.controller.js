@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 import { ChatEventEnum } from "../../../../constant.js";
 import { User } from "../../../../models/app/auth/auth-model.js"
 import { Chat } from "../../../../models/app/chat-app/chat.model.js";
@@ -336,7 +336,7 @@ const renamegroupchat=asyncHandler(async(req,res)=>{
         return res.status(200)
         .json(new ApiResponse(200,chat[0],"group name changed success"))
 
-    })
+})
 const deletegroupchat=asyncHandler(async(req,res)=>{
     const {chatId}=req.params;
 
@@ -349,7 +349,11 @@ const deletegroupchat=asyncHandler(async(req,res)=>{
         },
         ...chatCommonAggregation(),
     ])
+
     const chat=groupchat[0];
+    if(chat.admin?.toString()!==req.user._id?.toString()){
+        console.log("anly admin can delete grp");
+    }
     if(!chat){
         console.log("chat does not exist")
     }
@@ -369,5 +373,142 @@ const deletegroupchat=asyncHandler(async(req,res)=>{
 
 
 })
+const leavegroup=asyncHandler(async(req,res)=>{
+    const {chatId}=req.params;
 
-export { searchAllusers,createOrGetOneOnOneChat,deleteOneOnOneChat,getAllchats };
+    const groupChat=await Chat.findOne({
+        _id:new Mongoose.Types.ObjectId(chatId),
+        isGroupChat:true,
+    })
+
+    if(!groupChat){
+        console.log("group does not exist");
+    }
+    const existingparticipants=groupChat.participants;
+
+    if(!existingparticipants?.includes(req.user._id)){
+        console.log("user is not part of group");
+    }
+
+    const updatedChat=await Chat.findByIdAndUpdate(
+        chatId,
+        {
+            $pull:{
+                participants:req.user?._id,
+            }
+        },
+        {
+            new:true
+        }
+    )
+
+    const chat=await Chat.aggregate([
+        {
+            $match:{
+                _id:updatedChat._id,
+            }
+        },
+        ...chatCommonAggregation(),
+    ])
+    const payload=chat[0];
+    if(!payload){
+        console.log("interanl server error");
+    }
+    return res.status(200).json(new ApiResponse(200,payload,"Left a group successfully"));
+})
+const addNewParticipantsInGroup=asyncHandler(async(req,res)=>{
+    const {chatId,participantId}=req.params;
+    // const  {userId}=req.body;
+
+    const chat=await Chat.findOne(
+{
+    _id:new Mongoose.Types.ObjectId(chatId),
+    isGroupChat:true,
+})
+if(!chat){
+    console.log("group does not exist");
+}
+if(chat.admin?.toString()!==req.user._id?.toString()){
+    console.log("only admin can add new player")
+}
+
+const existingParticiapants=chat.participants;
+
+if(existingParticiapants?.includes(participantId)){
+    console.log("user already part of team");
+}
+const updatedChat=await Chat.findByIdAndUpdate(
+    chatId,
+    {
+        $push:{
+            participants:participantId,
+        }
+    },
+    {new:true}
+
+)
+const chatzero=await Chat.aggregate([
+    {
+        $match:{
+            _id:updatedChat._id
+        }
+    },
+    ...chatCommonAggregation(),
+])
+const payload=chatzero[0];
+
+if(!payload){
+    console.log("internal server error")
+}
+emitSocketEvent(
+    req,
+    participantId,
+    ChatEventEnum.NEW_CHAT_EVENT,
+    payload
+)
+return res.status(200).json(new ApiResponse(200,payload,"participant added successfully"));
+})
+const removeParticipantsInGroup=asyncHandler(async(req,res)=>{
+    const {chatId,participantId}=req.params;
+
+    const groupchat=await Chat.findOne({
+        _id:new Mongoose.Types.ObjectId(chatId),
+        isGroupChat:true,
+    })
+    if(!groupchat){
+        console.log("group does nto exist");
+    }
+    if(groupchat.admin?.toString()!==req.user._id?.toString()){
+        console.log("user need to be admin to remove participants");
+    }
+    const updatedchat=await Chat.findByIdAndUpdate(
+        chatId,
+        {
+            $pull:{
+                participants:participantId,
+            }
+        },
+        {new :true}    
+);
+const chat=await Chat.aggregate([
+    {
+        $match:{
+
+            _id:updatedchat._id,
+        }
+    },
+    ...chatCommonAggregation(),
+])
+const payload=chat[0];
+if(!payload){
+    console.log("some internal error");
+}
+emitSocketEvent(
+    req,participantId,
+    ChatEventEnum.LEAVE_CHAT_EVENT,
+    payload
+)
+return res.status(200).json(new ApiResponse(200,payload,"Participants removed successfully"));
+});
+
+export { searchAllusers,createOrGetOneOnOneChat,deleteOneOnOneChat,getAllchats,createAGroupChat,getgroupdetails,renamegroupchat,deletegroupchat,leavegroup,addNewParticipantsInGroup,removeParticipantsInGroup};
