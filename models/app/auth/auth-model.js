@@ -10,7 +10,6 @@ const userSchema = new Schema(
             type: {
                 url: String,
                 localPath: String,
-
             },
             default: {
                 url: ``,

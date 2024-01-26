@@ -5,6 +5,7 @@ import { ApiResponse } from "../../../../utils/apiResponse.js";
 import { asyncHandler } from "../../../../utils/asyncHandler.js";
 import { ChatEventEnum } from "../../../../constant.js";
 import { emitSocketEvent } from "../../../socket/index.js";
+import { getLocalPath, getStaticFilePath } from "../../../../utils/helper.js";
 
 
 
@@ -61,7 +62,7 @@ const getAllMessages=asyncHandler(async(req,res)=>{
         ...chatMessagecommonaggregation(),
         {
             $sort:{
-                createdAt:-1,
+                createdAt:+1,
             }
         }
     ])
@@ -122,7 +123,8 @@ const sendMessage=asyncHandler(async(req,res)=>{
     }
     chat.participants.forEach((participantObjectId)=>{
         if(participantObjectId.toString()===req.user._id.toString()) return;
-
+        console.log("=p=>"+participantObjectId.toString())
+        console.log("c=>"+chatId);
         emitSocketEvent(
             req,
             participantObjectId.toString(),

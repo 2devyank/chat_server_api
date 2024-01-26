@@ -224,5 +224,150 @@ return res.status(200)
 .json(new ApiResponse(200,chats||[],"User chats fetched"))
 }
 )
+const createAGroupChat=asyncHandler(async(req,res)=>{
+    const {name,participants}=req.body;
+
+    if(participants.includes(req.user._id.toString())){
+        console.log("participants array should not contain admin user")
+    }
+    const members=[...new Set([...participants,req.user._id.toString()])]
+
+    if(members.length<3){
+        console.log("participants should be more than 3 ")
+    }
+    const groupChat=await Chat.create({
+        name,
+        isGroupChat:true,
+        participants:members,
+        admin:req.user._id,
+    })
+    const chat=await Chat.aggregate([
+        {
+            $match:{
+                _id:groupChat._id,
+            }
+        },
+        ...chatCommonAggregation(),
+    ])
+
+    const payload=chat[0];
+
+    if(!payload){
+        console.log("internal server error");
+    }
+
+    payload?.participants?.forEach((participant)=>{
+        if(participant._id.toString()===req.user._id.toString()) return ;
+        emitSocketEvent(
+            req,
+            participant._id?.toString(),
+            ChatEventEnum.NEW_CHAT_EVENT,
+            payload
+        )
+    })
+
+})
+const getgroupdetails=asyncHandler(async(req,res)=>{
+    const {chatId}=req.params;
+
+    const group=await Chat.aggregate([
+        {
+            $match:{
+                _id:new mongoose.Types.ObjectId(chatId),
+                isGroupChat:true,
+            },
+        },
+        ...chatCommonAggregation(),
+    ])
+
+    if(!group){
+        console.log("group does not exist")
+
+    }
+
+    return res.status(200)
+    .json(new ApiResponse(200,group,"group details fetched"))
+})
+const renamegroupchat=asyncHandler(async(req,res)=>{
+    const {chatId}=req.params;
+    const {name}=req.body;
+
+    const groupChat=await Chat.findOne({
+        _id:new mongoose.Types.ObjectId(chatId),
+        isGroupChat:true,
+    })
+    if(!groupChat){
+        console.log("chat does not exist")
+    }
+
+    if(groupChat.admin?.toString()!==req.user._id?.toString()){
+        console.log("only admin can change name");
+    }
+    const updategroupame=await Chat.findByIdAndUpdate(
+        chatId,
+        {
+            $set:{
+                name:name,
+            },
+        },
+        {new:true}
+    );
+        const chat=await Chat.aggregate([
+            {
+                $match:{
+                    _id:updategroupame._id,
+                }
+            },
+            ...chatCommonAggregation(),
+        ])
+        const payload=chat[0];
+
+        if(!payload){
+            console.log("internal server error")
+        }
+        payload?.participants?.forEach((participant)=>{
+            emitSocketEvent(
+                req,
+                participant._id?.toString(),
+                ChatEventEnum.UPDATE_GROUP_NAME_EVENT,
+                payload
+            )
+        })
+        return res.status(200)
+        .json(new ApiResponse(200,chat[0],"group name changed success"))
+
+    })
+const deletegroupchat=asyncHandler(async(req,res)=>{
+    const {chatId}=req.params;
+
+    const groupchat=await Chat.aggregate([
+        {
+            $match:{
+                _id:new mongoose.Types.ObjectId(chatId),
+                isGroupChat:true,
+            }
+        },
+        ...chatCommonAggregation(),
+    ])
+    const chat=groupchat[0];
+    if(!chat){
+        console.log("chat does not exist")
+    }
+    await Chat.findByIdAndDelete(chatId);
+    await deleteCascadchatMessage(chatId);
+
+    chat?.participants?.forEach((participant)=>{
+        if(participant._id.toString()===req.user._id.toString()) return;
+        emitSocketEvent(
+            req,
+            participant._id?.toString(),
+            ChatEventEnum.LEAVE_CHAT_EVENT,
+            chat
+        )
+    })
+
+
+
+})
 
 export { searchAllusers,createOrGetOneOnOneChat,deleteOneOnOneChat,getAllchats };
