@@ -163,7 +163,7 @@ console.log("string conversion",receiver._id.toString())
         console.log("internal server error");
     }
     payload?.participants?.forEach((participants) => {
-        if (participants._id.toString() === req.user._id.toString()) return;
+        // if (participants._id.toString() === req.user._id.toString()) return;
         emitSocketEvent(
             req,
             participants._id.toString(),
@@ -257,7 +257,7 @@ const createAGroupChat=asyncHandler(async(req,res)=>{
     }
 
     payload?.participants?.forEach((participant)=>{
-        if(participant._id.toString()===req.user._id.toString()) return ;
+        // if(participant._id.toString()===req.user._id.toString()) return ;
         emitSocketEvent(
             req,
             participant._id?.toString(),
@@ -265,6 +265,8 @@ const createAGroupChat=asyncHandler(async(req,res)=>{
             payload
         )
     })
+    return res.status(201)
+    .json(new ApiResponse(201,payload,"group chat created"));
 
 })
 const getgroupdetails=asyncHandler(async(req,res)=>{
