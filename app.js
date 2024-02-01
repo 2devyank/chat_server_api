@@ -15,7 +15,7 @@ const httpServer=createServer(app);
 const io=new Server(httpServer,{
     pingTimeout:60000,
     cors:{
-        origin:"https://extraordinary-kangaroo-f8ac56.netlify.app/",
+        origin:"https://clinquant-valkyrie-fdddcc.netlify.app/",
         credentials:true, 
     }
 })
@@ -24,7 +24,7 @@ app.set("io",io)
 // app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(
     {
-        origin:"https://extraordinary-kangaroo-f8ac56.netlify.app/",
+        origin:"https://clinquant-valkyrie-fdddcc.netlify.app/",
         credentials:true, 
     }
 ))
