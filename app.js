@@ -15,7 +15,7 @@ const httpServer=createServer(app);
 const io=new Server(httpServer,{
     pingTimeout:60000,
     cors:{
-        origin:"http://localhost:5173",
+        origin:"https://extraordinary-kangaroo-f8ac56.netlify.app/",
         credentials:true, 
     }
 })
@@ -24,7 +24,7 @@ app.set("io",io)
 // app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(
     {
-        origin:"http://localhost:5173",
+        origin:"https://extraordinary-kangaroo-f8ac56.netlify.app/",
         credentials:true, 
     }
 ))
