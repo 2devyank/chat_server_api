@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { Chat } from "../../../../models/app/chat-app/chat.model.js";
 import { ChatMessage } from "../../../../models/app/chat-app/message.model.js";
-import { ApiResponse } from "../../../../utils/apiResponse.js";
+import { ApiResponse } from "../../../../utils/ApiResponse.js";
 import { asyncHandler } from "../../../../utils/asyncHandler.js";
 import { ChatEventEnum } from "../../../../constant.js";
 import { emitSocketEvent } from "../../../socket/index.js";

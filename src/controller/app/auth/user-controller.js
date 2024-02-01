@@ -4,7 +4,7 @@ import { asyncHandler } from "../../../../utils/asyncHandler.js";
 import crypto from "crypto";
 import {mailgencontent, sendEmail} from "../../../../utils/mail.js"
 import jwt from "jsonwebtoken";
-import { ApiResponse } from "../../../../utils/apiResponse.js";
+import { ApiResponse } from "../../../../utils/ApiResponse.js";
 
 const generateAccessAndRefreshTokens=async(userId)=>{
     try{
