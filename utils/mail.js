@@ -5,8 +5,8 @@ import nodemailer from "nodemailer"
     const mailgenerator=new Mailgen({
         theme:'default',
         product:{
-            name:'FreeApi',
-            link:"https://freeapi.app"
+            name:'nagpal enterprise',
+            link:"https://devyanknagpal.netlify.com"
         }
     })
 
