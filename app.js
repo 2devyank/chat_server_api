@@ -17,6 +17,7 @@ const io=new Server(httpServer,{
     cors:{
         origin:"http://localhost:5173/",
         credentials:true, 
+        allowedHeaders: ['Content-Type', 'Authorization'],
     }
 })
 app.set("io",io)
@@ -26,6 +27,7 @@ app.use(cors(
     {
         origin:"http://localhost:5173/",
         credentials:true, 
+        allowedHeaders: ['Content-Type', 'Authorization'],
     }
 ))
 app.use(cors())
