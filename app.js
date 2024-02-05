@@ -15,9 +15,9 @@ const httpServer=createServer(app);
 const io=new Server(httpServer,{
     pingTimeout:60000,
     cors:{
-        origin:"http://localhost:5173/",
+        origin:"https://extraordinary-kangaroo-f8ac56.netlify.app",
         credentials:true, 
-        allowedHeaders: ['Content-Type', 'Authorization'],
+      
     }
 })
 app.set("io",io)
@@ -25,12 +25,12 @@ app.set("io",io)
 // app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(
     {
-        origin:"http://localhost:5173/",
+        origin:"https://extraordinary-kangaroo-f8ac56.netlify.app",
         credentials:true, 
-        allowedHeaders: ['Content-Type', 'Authorization'],
+       
     }
 ))
-app.use(cors())
+// app.use(cors())
 
 app.use(express.json({limit:"16kb"}));
 app.use(express.urlencoded({extended:true,limit:"16kb"}));
